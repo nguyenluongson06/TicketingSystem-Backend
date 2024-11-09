@@ -21,7 +21,6 @@ public class User {
     @JoinColumn(name = "role_id")
     private Role role;
 
-    // Getters và Setters
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
 

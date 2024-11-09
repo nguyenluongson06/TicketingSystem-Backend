@@ -18,7 +18,6 @@ public class DatabaseConnection {
         }
 
         try {
-            // Tải Driver cho MySQL
             Class.forName("com.mysql.cj.jdbc.Driver");
             connection = DriverManager.getConnection(URL, USER, PASSWORD);
             System.out.println("Kết nối cơ sở dữ liệu thành công!");

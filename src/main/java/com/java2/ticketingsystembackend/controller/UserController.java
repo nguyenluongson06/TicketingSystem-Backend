@@ -16,19 +16,15 @@ public class UserController {
 
     @PostMapping("/signup")
     public ResponseEntity<String> signup(@RequestBody User user) {
-        // Kiểm tra xem tên đăng nhập hoặc email đã tồn tại chưa
         if (userService.userExists(user.getUsername(), user.getEmail())) {
             return ResponseEntity.badRequest().body("Username or Email already exists");
         }
 
-        // Thiết lập vai trò cho user (Role mặc định là 'USER')
         user.setRole(new Role());
-        user.getRole().setId(1); // Giả sử Role 'USER' có id là 1
+        user.getRole().setId(1);
 
-        // Lưu thông tin người dùng vào cơ sở dữ liệu
         userService.saveUser(user);
 
-        // Trả về phản hồi thành công
         return ResponseEntity.ok("User registered successfully");
     }
 }
