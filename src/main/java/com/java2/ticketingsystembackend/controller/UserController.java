@@ -1,7 +1,7 @@
 package com.java2.ticketingsystembackend.controller;
 
-import com.java2.ticketingsystembackend.model.Role;
-import com.java2.ticketingsystembackend.model.User;
+import com.java2.ticketingsystembackend.entity.Role;
+import com.java2.ticketingsystembackend.entity.User;
 import com.java2.ticketingsystembackend.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
