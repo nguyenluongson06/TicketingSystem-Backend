@@ -8,41 +8,41 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Entity
 @Data
 @Table(name = "events")
 @Getter @Setter
+@Entity
 public class Event {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    @Column(name = "id")
+    private Integer id;
+
+    @Column(unique = true, nullable = false, name = "uuid")
+    private String uuid = UUID.randomUUID().toString();
 
     @Column(nullable = false, name = "name")
     private String name;
 
-    @Column(name = "time_start", nullable = false)
+    @Column(nullable = false, name = "time_start")
     private LocalDateTime timeStart;
 
-    @Column(name = "time_end", nullable = false)
+    @Column(nullable = false, name = "time_end")
     private LocalDateTime timeEnd;
 
-    @Column(name = "place")
+    @Column(nullable = false, name = "place")
     private String place;
-
-    @Column(name = "description")
-    private String description;
-
-    @Column(name = "max_quantity")
-    private Integer maxQuantity;
-
-
-    @Column(name = "is_public")
-    private int isPublic = 1;
 
     @ManyToOne
     @JoinColumn(name = "organizer_id")
     private User organizer;
 
-    @Column(name = "organizer_uuid", nullable = true)
-    private UUID organizerUuid;
+    @Column(nullable = false, name = "description")
+    private String description;
+
+    @Column(nullable = false, name = "max_quantity")
+    private Integer maxQuantity;
+
+    @Column(nullable = false, name = "is_public")
+    private Boolean isPublic = true;
 }

@@ -15,8 +15,8 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @Column(nullable = false, unique = true)
-    private UUID uuid = UUID.randomUUID();
+    @Column(nullable = false, unique = true, name = "uuid")
+    private String uuid = UUID.randomUUID().toString();
 
     @Column(unique = true, nullable = false, name = "username")
     private String username;
@@ -39,7 +39,4 @@ public class User {
     @ManyToOne
     @JoinColumn(name = "role_id")
     private Role role;
-
-    @JoinColumn(name = "uuid")
-    private UUID uuid;
 }

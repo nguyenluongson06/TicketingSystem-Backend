@@ -3,26 +3,32 @@
 import com.java2.ticketingsystembackend.entity.*;
 import com.java2.ticketingsystembackend.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 public class AuthController {
 
-    @Autowired
-    private UserService userService;
+    private final AuthService authService;
 
-    ///TODO
-    @PostMapping("/register")
-    public String register(@RequestBody User user) {
-        userService.saveUser(user);
-        return "User registered successfully";
+    @Autowired
+    public AuthController(AuthService authService) {
+        this.authService = authService;
     }
 
-    ///TODO
+    @PostMapping("/register")
+    public ResponseEntity<User> register(@RequestBody User user) {
+        User registeredUser = authService.register(user);
+        return ResponseEntity.status(HttpStatus.CREATED).body(registeredUser);
+    }
+
     @PostMapping("/login")
-    public String login(@RequestBody User user) {
-        return "";
+    public ResponseEntity<User> login(@RequestBody User user) {
+        User authenticatedUser = authService.authenticate(user.getUsername(), user.getPassword());
+        return ResponseEntity.ok(authenticatedUser);
     }
 }
+
 

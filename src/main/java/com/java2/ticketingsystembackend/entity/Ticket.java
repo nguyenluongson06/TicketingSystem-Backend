@@ -1,27 +1,22 @@
 ﻿package com.java2.ticketingsystembackend.entity;
-
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
-@Data
 @Table(name = "tickets")
+@Getter @Setter
 public class Ticket {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    @Column(name = "id")
+    private Integer id;
 
-    @Column(nullable = false, name = "tier_name")
-    private String tierName;
-
-    @Column(nullable = false, name = "tier_price")
-    private Double tierPrice;
-
-    @Column(nullable = false, name = "max_quantity")
-    private Integer maxQuantity;
+    @ManyToOne
+    @JoinColumn(name = "info_id", nullable = false)
+    private TicketInfo info;
 
     @ManyToOne
     @JoinColumn(name = "event_id", nullable = false)
     private Event event;
 }
-

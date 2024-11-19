@@ -2,37 +2,42 @@
 
 import com.java2.ticketingsystembackend.entity.*;
 import com.java2.ticketingsystembackend.repository.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class EventService {
     private final EventRepository eventRepository;
 
+    @Autowired
     public EventService(EventRepository eventRepository) {
         this.eventRepository = eventRepository;
     }
 
-    ///TODO: auth + chia role
-    public List<Event> getAllEvents() {
-        return eventRepository.findAll();
+    public List<Event> getEvents(User user) {
+        if (user.getRole().getName().equals("ADMIN")) {
+            return eventRepository.findAll();
+        } else if (user.getRole().getName().equals("ORGANIZER")) {
+            return eventRepository.findAll().stream()
+                    .filter(e -> e.getOrganizer().getId() == user.getId() || e.getIsPublic())
+                    .collect(Collectors.toList());
+        } else {
+            return eventRepository.findAll().stream()
+                    .filter(Event::getIsPublic)
+                    .collect(Collectors.toList());
+        }
     }
 
-    ///TODO: auth + chia response theo role
-    public Optional<Event> getEventById(int id) {
-        return eventRepository.findById(id);
-    }
-
-    ///TODO: auth + chia role
-    public Event saveEvent(Event event) {
-        return eventRepository.save(event);
-    }
-
-    ///TODO: auth + chia role
-    public void deleteEvent(int id) {
-        eventRepository.deleteById(id);
+    public Optional<Event> getEventDetail(String uuid, User user) throws Exception {
+        Optional<Event> event = eventRepository.findByUuid(uuid);
+        if (event.isPresent() && (event.get().getIsPublic() || event.get().getOrganizer().equals(user))) {
+            return event;
+        }
+        throw new Exception("You do not have access to this event.");
     }
 }
 

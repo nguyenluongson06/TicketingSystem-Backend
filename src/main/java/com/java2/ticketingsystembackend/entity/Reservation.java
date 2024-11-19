@@ -6,24 +6,24 @@ import lombok.Data;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Entity
 @Data
 @Table(name = "reservations")
+@Entity
 public class Reservation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
-    @Column(name = "user_uuid", nullable = true)
-    private UUID userUuid;
+    @Column(unique = true, nullable = false)
+    private String uuid = UUID.randomUUID().toString();
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "ticket_id", nullable = false)
-    private Ticket ticket;
+    @JoinColumn(name = "tier_id", nullable = false)
+    private Ticket tier;
 
     @Column(nullable = false)
     private Integer quantity;
@@ -31,4 +31,5 @@ public class Reservation {
     @Column(nullable = false)
     private LocalDateTime reservationDate = LocalDateTime.now();
 }
+
 

@@ -3,13 +3,14 @@
 import com.java2.ticketingsystembackend.entity.Ticket;
 import com.java2.ticketingsystembackend.service.TicketService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/tickets")
+@RequestMapping("/api/tickets")
 public class TicketController {
 
     private final TicketService ticketService;
@@ -20,31 +21,15 @@ public class TicketController {
     }
 
     @GetMapping("/event/{eventId}")
-    public List<Ticket> getTicketsForEvent(@PathVariable int eventId) {
-        return ticketService.getAllTicketsForEvent(eventId);
+    public ResponseEntity<List<Ticket>> getAllTicketsForEvent(@PathVariable Integer eventId) {
+        List<Ticket> tickets = ticketService.getAllTicketsForEvent(eventId);
+        return ResponseEntity.ok(tickets);
     }
 
-    @GetMapping("/{id}")
-    public Ticket getTicketById(@PathVariable int id) {
-        return ticketService.getTicketById(id).orElse(null);
-    }
-
-    @PostMapping("/create")
-    @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZER')")
-    public Ticket createTicket(@RequestBody Ticket ticket) {
-        return ticketService.createTicket(ticket);
-    }
-
-    @PutMapping("/update/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZER')")
-    public Ticket updateTicket(@PathVariable int id, @RequestBody Ticket updatedTicket) {
-        return ticketService.updateTicket(id, updatedTicket);
-    }
-
-    @DeleteMapping("/delete/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZER')")
-    public String deleteTicket(@PathVariable int id) {
-        ticketService.deleteTicket(id);
-        return "Ticket deleted successfully";
+    @PostMapping
+    public ResponseEntity<Ticket> createTicket(@RequestParam Integer eventId, @RequestParam Integer ticketInfoId) {
+        Ticket ticket = ticketService.createTicket(eventId, ticketInfoId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ticket);
     }
 }
+

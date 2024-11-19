@@ -1,30 +1,32 @@
 package com.java2.ticketingsystembackend.controller;
 
-import com.java2.ticketingsystembackend.entity.Role;
 import com.java2.ticketingsystembackend.entity.User;
 import com.java2.ticketingsystembackend.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api/users")
 public class UserController {
 
+    private final UserService userService;
+
     @Autowired
-    private UserService userService;
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
-    @PostMapping("/signup")
-    public ResponseEntity<String> signup(@RequestBody User user) {
-        if (userService.userExists(user.getUsername(), user.getEmail())) {
-            return ResponseEntity.badRequest().body("Username or Email already exists");
-        }
+    @GetMapping
+    public ResponseEntity<List<User>> getAllUsers() {
+        return ResponseEntity.ok(userService.getAllUsers());
+    }
 
-        user.setRole(new Role());
-        user.getRole().setId(1);
-
-        userService.saveUser(user);
-
-        return ResponseEntity.ok("User registered successfully");
+    @GetMapping("/{uuid}")
+    public ResponseEntity<User> getUserByUuid(@PathVariable String uuid) {
+        User user = userService.getUserByUuid(uuid);
+        return ResponseEntity.ok(user);
     }
 }

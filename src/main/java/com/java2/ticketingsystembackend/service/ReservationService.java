@@ -17,14 +17,14 @@ public class ReservationService {
     }
 
     public List<Reservation> getReservationsByUser(User user) {
-        return reservationRepository.findByUser(user);
+        return reservationRepository.findByUser_Id(user.getId());
     }
 
     public List<Reservation> getReservationByUserId(int id){
         try {
             if (userRepository.findById(id).isPresent()) {
                 User user = userRepository.findById(id).get();
-                return reservationRepository.findByUser(user);
+                return reservationRepository.findByUser_Id(user.getId());
             }
         } catch (Exception e) {
             System.out.println("Cannot get reservation" + e.getMessage());
