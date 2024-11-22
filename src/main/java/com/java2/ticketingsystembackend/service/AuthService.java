@@ -1,62 +1,27 @@
-﻿package com.java2.ticketingsystembackend.service;
+    package com.java2.ticketingsystembackend.service;
 
-import com.java2.ticketingsystembackend.entity.*;
-import com.java2.ticketingsystembackend.repository.*;
-import jakarta.persistence.EntityNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
+    import com.java2.ticketingsystembackend.entity.User;
+    import com.java2.ticketingsystembackend.repository.UserRepository;
+    import org.slf4j.Logger;
+    import org.slf4j.LoggerFactory;
+    import org.springframework.security.core.context.SecurityContextHolder;
+    import org.springframework.security.core.userdetails.UsernameNotFoundException;
+    import org.springframework.stereotype.Service;
 
-import java.util.UUID;
+    @Service
+    public class AuthService {
 
-@Service
-public class AuthService {
+        private final Logger logger = LoggerFactory.getLogger(AuthService.class);
+        private final UserRepository userRepository;
 
-    private final UserRepository userRepository;
-    private final RoleRepository roleRepository;
-    private final PasswordEncoder passwordEncoder;
-
-    @Autowired
-    public AuthService(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
-        this.roleRepository = roleRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
-
-    /**
-     * Register a new user with the default USER role.
-     */
-    public User register(User user) {
-        if (userRepository.existsByUsername(user.getUsername())) {
-            throw new IllegalArgumentException("Username is already taken");
-        }
-        if (userRepository.existsByEmail(user.getEmail())) {
-            throw new IllegalArgumentException("Email is already in use");
+        public AuthService(UserRepository userRepository) {
+            this.userRepository = userRepository;
         }
 
-        Role userRole = roleRepository.findByName("USER")
-                .orElseThrow(() -> new EntityNotFoundException("Default role USER not found"));
-
-        user.setUuid(UUID.randomUUID().toString());
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setRole(userRole);
-
-        return userRepository.save(user);
-    }
-
-    /**
-     * Authenticate a user and return the entity if valid.
-     */
-    public User authenticate(String username, String password) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new EntityNotFoundException("Invalid username or password"));
-
-        if (!passwordEncoder.matches(password, user.getPassword())) {
-            throw new IllegalArgumentException("Invalid username or password");
+        public User getCurrentUser() {
+            String username = SecurityContextHolder.getContext().getAuthentication().getName();
+            return userRepository.findByUsername(username)
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
         }
-
-        return user;
     }
-}
-
 

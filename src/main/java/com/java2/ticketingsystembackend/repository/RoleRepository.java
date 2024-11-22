@@ -1,4 +1,4 @@
-﻿package com.java2.ticketingsystembackend.repository;
+package com.java2.ticketingsystembackend.repository;
 
 import com.java2.ticketingsystembackend.entity.Role;
 import org.springframework.data.jpa.repository.JpaRepository;

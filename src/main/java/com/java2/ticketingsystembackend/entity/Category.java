@@ -5,18 +5,13 @@ import lombok.Data;
 
 @Entity
 @Data
-@Table(name = "tickets")
-public class Ticket {
+@Table(name = "categories")
+public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToOne
-    @JoinColumn(name = "info_id")
-    private TicketInfo info;
-
-    @ManyToOne
-    @JoinColumn(name = "event_id")
-    private Event event;
+    @Column(nullable = false)
+    private String name;
 }
 

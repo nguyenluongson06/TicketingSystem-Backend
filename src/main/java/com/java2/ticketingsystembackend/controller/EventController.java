@@ -1,47 +1,62 @@
-﻿package com.java2.ticketingsystembackend.controller;
+package com.java2.ticketingsystembackend.controller;
 
+import com.java2.ticketingsystembackend.dto.EventDTO;
 import com.java2.ticketingsystembackend.entity.Event;
+import com.java2.ticketingsystembackend.mapper.EventMapper;
 import com.java2.ticketingsystembackend.service.EventService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/events")
+@RequestMapping("/api/events")
 public class EventController {
 
     @Autowired
     private EventService eventService;
 
-    @GetMapping("/list")
-    public List<Event> getEventList(Authentication auth) {
-        // Fetch list based on user role and organizerId (logic to be implemented)
-        return eventService.getAllEvents();
+    @GetMapping
+    public ResponseEntity<List<EventDTO>> getEventList() {
+        List<EventDTO> events = eventService.getEventsByUserRole();
+        return ResponseEntity.ok(events);
     }
 
-    @GetMapping("/{id}")
-    public Event getEventDetail(@PathVariable int id, Authentication auth) {
-        // Implement visibility check for the requested event and return it
-        return eventService.getEventById(id).orElse(null);
+    @GetMapping("/{eventId}")
+    public ResponseEntity<EventDTO> getEventInfo(@PathVariable Integer eventId) {
+        return eventService.getEventById(eventId).map(EventMapper::toEventDTO)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
-    @PostMapping("/create")
-    public Event createEvent(@RequestBody Event event) {
-        return eventService.saveEvent(event);
+    @GetMapping("/uuid/{uuid}")
+    public ResponseEntity<EventDTO> getEventByUuid(@PathVariable String uuid) {
+        return eventService.getEventByUuid(uuid).map(EventMapper::toEventDTO)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
-    @PutMapping("/{id}")
-    public Event changeEventDetail(@PathVariable Long id, @RequestBody Event updatedEvent) {
-        // Implement access control for organizer/admin only
-        return eventService.saveEvent(updatedEvent);
+    @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZER')")
+    public ResponseEntity<Event> createEvent(@RequestBody Event event) {
+        Event createdEvent = eventService.createEvent(event);
+        return ResponseEntity.ok(createdEvent);
     }
 
-    @DeleteMapping("/{id}")
-    public String deleteEvent(@PathVariable int id) {
-        // Implement access control for organizer/admin only
-        eventService.deleteEvent(id);
-        return "Event deleted successfully";
+    @PutMapping("/{eventId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZER')")
+    public ResponseEntity<Event> updateEvent(@PathVariable Integer eventId, @RequestBody Event updatedEvent) {
+        Event event = eventService.updateEvent(eventId, updatedEvent);
+        return ResponseEntity.ok(event);
+    }
+
+    @DeleteMapping("/{eventId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZER')")
+    public ResponseEntity<Void> deleteEvent(@PathVariable Integer eventId) {
+        eventService.deleteEvent(eventId);
+        return ResponseEntity.noContent().build();
     }
 }
+

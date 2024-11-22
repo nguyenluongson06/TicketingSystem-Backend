@@ -1,46 +1,46 @@
 package com.java2.ticketingsystembackend.service;
 
-import com.java2.ticketingsystembackend.entity.*;
-
+import com.java2.ticketingsystembackend.dto.SignupRequest;
+import com.java2.ticketingsystembackend.entity.Role;
+import com.java2.ticketingsystembackend.entity.User;
 import com.java2.ticketingsystembackend.repository.UserRepository;
-import jakarta.persistence.EntityNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
-    /**
-     * Get all users.
-     */
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
-    }
+    public boolean registerUser(SignupRequest signupRequest) {
+        if (userRepository.existsByUsername(signupRequest.getUsername()) ||
+                userRepository.existsByEmail(signupRequest.getEmail())) {
+            return false;
+        }
 
-    /**
-     * Find user by UUID.
-     */
-    public User getUserByUuid(String uuid) {
-        return userRepository.findByUuid(uuid)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        User user = new User();
+        Role defaultRole = new Role(){};
+        defaultRole.setId(1); ///set default role as USER
+        user.setUuid(UUID.randomUUID().toString());
+        user.setUsername(signupRequest.getUsername());
+        user.setPassword(passwordEncoder.encode(signupRequest.getPassword()));
+        user.setEmail(signupRequest.getEmail());
+        user.setFullname(signupRequest.getFullname());
+        user.setTel(signupRequest.getTel());
+        user.setAddress(signupRequest.getAddress());
+        user.setRole(defaultRole);
+        userRepository.save(user);
+        System.out.println("New user uuid:" + user.getUuid());
+        return true;
     }
 }
+
 

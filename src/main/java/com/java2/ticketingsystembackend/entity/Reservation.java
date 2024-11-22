@@ -1,4 +1,4 @@
-﻿package com.java2.ticketingsystembackend.entity;
+package com.java2.ticketingsystembackend.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
@@ -6,30 +6,31 @@ import lombok.Data;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Data
-@Table(name = "reservations")
 @Entity
+@Data
+@Table(name = "reservation")
 public class Reservation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(unique = true, nullable = false)
-    private String uuid = UUID.randomUUID().toString();
+    private String uuid;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id")
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "tier_id", nullable = false)
-    private Ticket tier;
+    @JoinColumn(name = "ticket_id")
+    private Ticket ticket;
 
     @Column(nullable = false)
     private Integer quantity;
 
-    @Column(nullable = false)
-    private LocalDateTime reservationDate = LocalDateTime.now();
-}
+    @Column(columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    private LocalDateTime reservationDate;
 
+    @Column(columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private Boolean isUsed;
+}
 

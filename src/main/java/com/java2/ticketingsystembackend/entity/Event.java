@@ -1,4 +1,4 @@
-﻿package com.java2.ticketingsystembackend.entity;
+package com.java2.ticketingsystembackend.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
@@ -8,41 +8,47 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+@Entity
 @Data
 @Table(name = "events")
 @Getter @Setter
-@Entity
 public class Event {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
     private Integer id;
 
-    @Column(unique = true, nullable = false, name = "uuid")
-    private String uuid = UUID.randomUUID().toString();
+    private String uuid;
 
-    @Column(nullable = false, name = "name")
+    @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false, name = "time_start")
+    @Column(nullable = false)
     private LocalDateTime timeStart;
 
-    @Column(nullable = false, name = "time_end")
+    @Column(nullable = false)
     private LocalDateTime timeEnd;
 
-    @Column(nullable = false, name = "place")
     private String place;
 
     @ManyToOne
     @JoinColumn(name = "organizer_id")
     private User organizer;
 
-    @Column(nullable = false, name = "description")
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     @Column(nullable = false, name = "max_quantity")
     private Integer maxQuantity;
 
-    @Column(nullable = false, name = "is_public")
-    private Boolean isPublic = true;
+    @Column(columnDefinition = "BOOLEAN DEFAULT TRUE", name = "is_public")
+    private Boolean isPublic;
+
+    @ManyToOne
+    @JoinColumn(name = "category_id")
+    private Category category;
+
+    public boolean isPublic() {
+        return isPublic;
+    }
 }
+

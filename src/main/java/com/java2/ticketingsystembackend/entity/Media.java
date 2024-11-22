@@ -1,11 +1,10 @@
-﻿package com.java2.ticketingsystembackend.entity;
+package com.java2.ticketingsystembackend.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
 
-@Data
-@Table(name = "media")
 @Entity
+@Data
 public class Media {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,11 +18,11 @@ public class Media {
     private String url;
 
     @Enumerated(EnumType.STRING)
-    private MediaType type;
+    private MediaType type = MediaType.IMAGE;
 
     public enum MediaType {
-        IMAGE, VIDEO
+        IMAGE,
+        VIDEO
     }
 }
-
 
