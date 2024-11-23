@@ -36,4 +36,3 @@ public class EventDTO {
         this.categoryName = categoryName;
     }
 }
-

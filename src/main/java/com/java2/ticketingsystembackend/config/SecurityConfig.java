@@ -30,8 +30,10 @@ public class SecurityConfig {
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeRequests(authorizeRequests ->
                         authorizeRequests
-                                .requestMatchers("/api/auth/signup", "/api/auth/login").permitAll()// Allow open access to register/login
-                                .requestMatchers("/api/events").permitAll()//permit all requests to /events endpoint
+                                .requestMatchers("/api/auth/signup", "/api/auth/login").permitAll()
+                                .requestMatchers("/api/events/list").permitAll()// Allow open access to register/login
+                                .requestMatchers("/api/events/info/**").permitAll()//permit all to get info using uuid
+                                .requestMatchers("/api/events/info").hasAnyRole("ADMIN", "ORGANIZER")//only auth users can get info using id
                                 .requestMatchers("/admin/**").hasRole("ADMIN")     // Only admins can access /admin endpoints
                                 .requestMatchers("/organizer/**").hasRole("ORGANIZER")  // Only organizers can access /organizer endpoints
                                 .anyRequest().authenticated()  // Require authentication for all other requests

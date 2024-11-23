@@ -1,17 +1,18 @@
 package com.java2.ticketingsystembackend.service;
 
 import com.java2.ticketingsystembackend.dto.EventDTO;
+import com.java2.ticketingsystembackend.exception.UnauthorizedException;
 import com.java2.ticketingsystembackend.mapper.EventMapper;
+import com.java2.ticketingsystembackend.security.AuthenticationUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import com.java2.ticketingsystembackend.entity.*;
 import com.java2.ticketingsystembackend.repository.*;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -24,7 +25,10 @@ public class EventService {
     @Autowired
     private UserRepository userRepository;
 
-    public List<EventDTO> getEventsByUserRole() {
+    @Autowired
+    private AuthenticationUtils authenticationUtils;
+
+    public List<EventDTO> getEventListByUserRole() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated() || auth.getAuthorities().isEmpty() || auth.getPrincipal().equals("anonymousUser")) {
             System.out.println("Anonymous user is querying event list");
@@ -35,21 +39,6 @@ public class EventService {
 
         Object principal = auth.getPrincipal(); //principal is userName
         User user = userRepository.findByUsername(String.valueOf(principal)).get();
-        System.out.print("Current user authorities:");
-        auth.getAuthorities().stream().forEach(a -> System.out.print(a + " "));
-        System.out.println();
-        /*
-        if (principal instanceof UserDetails){
-            //handle if principal is an instance of UserDetails
-            String userName = ((UserDetails)principal).getUsername();
-            user = userRepository.findByUsername(userName).get();
-        } else if ((principal instanceof User)) {
-            //directly cast principal to User if its an instance of User
-            user = (User) principal;
-        } else {
-            System.out.println("Principal is not of type User or UserDetails");
-            throw new IllegalStateException("Principal is not a valid User/UserdDetails object");
-        }*/
 
         // Access role using Authentication authorities
         if (auth.getAuthorities().contains(new SimpleGrantedAuthority("ADMIN"))) {
@@ -71,58 +60,92 @@ public class EventService {
     }
 
 
-    public Optional<Event> getEventById(Integer eventId) {
-        return eventRepository.findById(eventId);
+    public Optional<EventDTO> getEventById(Integer eventId) {
+        ///check auth then get user
+        User user = authenticationUtils.getAuthenticatedUser();
+
+        ///try to find event
+        Optional<Event> eventOpt = eventRepository.findById(eventId);
+
+        if (eventOpt.isEmpty()) {
+            return Optional.empty();
+        }
+
+        Event event = eventOpt.get();
+
+        // Role-based access control
+        if (user.getRole().getName().equals("ADMIN")) {
+            // Admins can access any event
+            return Optional.of(EventMapper.toEventDTO(event));
+        } else if (user.getRole().getName().equals("ORGANIZER")) {
+            // Organizers can only access events they organize
+            if (event.getOrganizer().getId().equals(user.getId())) {
+                return Optional.of(EventMapper.toEventDTO(event));
+            } else {
+                throw new UnauthorizedException("Unauthorized: You do not have permission to access this resource.");
+            }
+        }
+
+        // All others (normal users) get 401
+        throw new UnauthorizedException("Unauthorized: You do not have permission to access this resource.");
     }
 
-    public Optional<Event> getEventByUuid(String uuid) {
-        return eventRepository.findByUuid(uuid);
+    public Optional<EventDTO> getEventByUuid(String uuid) {
+        ///find event first, if event is public just return it
+        Optional<Event> eventOpt = eventRepository.findByUuid(uuid);
+        if (eventOpt.isEmpty()) {
+            return Optional.empty();
+        }
+        Event event = eventOpt.get();
+        if (event.getIsPublic()){
+            return Optional.of(EventMapper.toEventDTO(event));
+        }
+
+        ///check auth = get user
+        User user = authenticationUtils.getAuthenticatedUser();
+
+        ///if admin or organizer own the event then return event
+        if (user.getRole().getName().equals("ADMIN") || (user.getRole().getName().equals("ORGANIZER") && event.getOrganizer().getId().equals(user.getId()))) return Optional.of(EventMapper.toEventDTO(event));
+
+        // All other cases get 401
+        throw new UnauthorizedException("Unauthorized: You do not have permission to access this resource.");
     }
 
     public Event createEvent(Event event) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        User user = (User) auth.getPrincipal();
+        ///auth + get user
+        User user = authenticationUtils.getAuthenticatedUser();
 
-        // Only admins and organizers can create events
-        if (auth.getAuthorities().contains(new SimpleGrantedAuthority("ADMIN")) ||
-                auth.getAuthorities().contains(new SimpleGrantedAuthority("ORGANIZER"))) {
-            event.setOrganizer(userRepository.findById(user.getId()).get());
+        ///only create event if user is admin/organizer
+        if (user.getRole().getName().equals("ADMIN") || user.getRole().getName().equals("ORGANIZER")) {
+            event.setOrganizer(user);
             return eventRepository.save(event);
         }
-        throw new RuntimeException("Unauthorized");
+        throw new UnauthorizedException("Unauthorized: You do not have permission to access this resource.");
     }
 
     public Event updateEvent(Integer eventId, Event updatedEvent) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        User user = (User) auth.getPrincipal();
+        User user = authenticationUtils.getAuthenticatedUser();
 
         Event existingEvent = eventRepository.findById(eventId)
                 .orElseThrow(() -> new RuntimeException("Event not found"));
 
-        // Check if user has permission
-        if (auth.getAuthorities().contains(new SimpleGrantedAuthority("ADMIN")) ||
-                (auth.getAuthorities().contains(new SimpleGrantedAuthority("ORGANIZER")) &&
-                        existingEvent.getOrganizer().getId().equals(user.getId()))) {
+        /// Check if user has permission: admin can change any event, organizer can change event they own
+        if ( user.getRole().getName().equals("ADMIN") || (user.getRole().getName().equals("ORGANIZER")) && (existingEvent.getOrganizer().getId().equals(user.getId()))) {
             updatedEvent.setId(eventId);
             return eventRepository.save(updatedEvent);
         }
-        throw new RuntimeException("Unauthorized");
+        throw new UnauthorizedException("Unauthorized: You do not have permission to access this resource.");
     }
 
     public void deleteEvent(Integer eventId) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        User user = (User) auth.getPrincipal();
+        User user = authenticationUtils.getAuthenticatedUser();
 
         Event existingEvent = eventRepository.findById(eventId)
                 .orElseThrow(() -> new RuntimeException("Event not found"));
 
-        // Check if user has permission
-        if (auth.getAuthorities().contains(new SimpleGrantedAuthority("ADMIN")) ||
-                (auth.getAuthorities().contains(new SimpleGrantedAuthority("ORGANIZER")) &&
-                        existingEvent.getOrganizer().getId().equals(user.getId()))) {
-            eventRepository.delete(existingEvent);
-        } else {
-            throw new RuntimeException("Unauthorized");
-        }
+        /// Check if user has permission: admin can delete any event, organizer can delete event they own
+        if (user.getRole().getName().equals("ADMIN") || (user.getRole().getName().equals("ORGANIZER")) && (existingEvent.getOrganizer().getId().equals(user.getId()))) eventRepository.delete(existingEvent);
+
+        throw new UnauthorizedException("Unauthorized: You do not have permission to access this resource.");
     }
 }
