@@ -13,7 +13,6 @@ public class EventMapper {
         );
 
         return new EventDTO(
-                event.getId(),
                 event.getUuid(),
                 event.getName(),
                 event.getTimeStart(),

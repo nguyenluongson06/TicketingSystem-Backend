@@ -7,7 +7,6 @@ import java.time.LocalDateTime;
 
 @Getter @Setter
 public class EventDTO {
-    private int id;
     private String uuid;
     private String name;
     private LocalDateTime timeStart;
@@ -20,10 +19,9 @@ public class EventDTO {
     private String categoryName;
 
     // Constructor
-    public EventDTO(int id, String uuid, String name, LocalDateTime timeStart, LocalDateTime timeEnd,
+    public EventDTO(String uuid, String name, LocalDateTime timeStart, LocalDateTime timeEnd,
                     String place, String description, int maxQuantity, boolean isPublic,
                     OrganizerDTO organizer, String categoryName) {
-        this.id = id;
         this.uuid = uuid;
         this.name = name;
         this.timeStart = timeStart;

@@ -1,14 +1,21 @@
 package com.java2.ticketingsystembackend.controller;
 
+import com.java2.ticketingsystembackend.dto.CreateEventDTO;
 import com.java2.ticketingsystembackend.dto.EventDTO;
+import com.java2.ticketingsystembackend.dto.UpdateEventDTO;
 import com.java2.ticketingsystembackend.entity.Event;
+import com.java2.ticketingsystembackend.exception.EntityNotFoundException;
+import com.java2.ticketingsystembackend.exception.UnauthorizedException;
 import com.java2.ticketingsystembackend.service.EventService;
+import jakarta.annotation.security.PermitAll;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/events")
@@ -24,50 +31,72 @@ public class EventController {
     }
 
     @GetMapping("/info")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZER')")
     public ResponseEntity<EventDTO> getEventInfo(@RequestParam Integer id) {
-        /*
-        Optional<Event> eventOptional = eventService.getEventById(id);
-        if (eventOptional.isPresent()) {
-            Event event = eventOptional.get();
-            EventDTO result = new EventDTO(event.getId(), event.getUuid(), event.getName(), event.getTimeStart(), event.getTimeEnd(), event.getPlace(), event.getDescription(), event.getMaxQuantity(), event.getIsPublic(), new OrganizerDTO(event.getOrganizer().getUuid(), event.getOrganizer().getFullname()), event.getCategory().getName());
-            return ResponseEntity.ok(result);
-        } else {
-            return ResponseEntity.notFound().build();
+        try {
+            Optional<EventDTO> eventDTO = eventService.getEventById(id);
+
+            if (eventDTO.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+
+            return eventDTO.map(ResponseEntity::ok).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+        } catch (UnauthorizedException e) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
-        */
-
-        return eventService.getEventById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-
     }
 
     @GetMapping("/info/{uuid}")
+    @PermitAll
     public ResponseEntity<EventDTO> getEventByUuid(@PathVariable String uuid) {
         return eventService.getEventByUuid(uuid)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PostMapping
+    @PostMapping("/create")
     @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZER')")
-    public ResponseEntity<Event> createEvent(@RequestBody Event event) {
-        Event createdEvent = eventService.createEvent(event);
-        return ResponseEntity.ok(createdEvent);
+    public ResponseEntity<String> createEvent(@RequestBody CreateEventDTO eventDTO) {
+        try {
+            Event event = eventService.createEvent(eventDTO);
+            return ResponseEntity.status(HttpStatus.CREATED).body(event.getUuid());
+        } catch (UnauthorizedException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
     }
 
-    @PutMapping("/{eventId}")
+    @PutMapping("/update/{uuid}")
     @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZER')")
-    public ResponseEntity<Event> updateEvent(@PathVariable Integer eventId, @RequestBody Event updatedEvent) {
-        Event event = eventService.updateEvent(eventId, updatedEvent);
-        return ResponseEntity.ok(event);
+    public ResponseEntity<EventDTO> updateEvent(@PathVariable String uuid, @RequestBody UpdateEventDTO updatedEvent) {
+        try {
+            EventDTO updateResult = eventService.updateEvent(uuid, updatedEvent);
+            return ResponseEntity.ok(updateResult);
+        } catch (UnauthorizedException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
 
-    @DeleteMapping("/{eventId}")
+    @DeleteMapping("/delete/{uuid}")
     @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZER')")
-    public ResponseEntity<Void> deleteEvent(@PathVariable Integer eventId) {
-        eventService.deleteEvent(eventId);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<String> deleteEvent(@PathVariable String uuid) {
+        try {
+            eventService.deleteEvent(uuid);
+            return ResponseEntity.status(HttpStatus.OK).body("Event with UUID " + uuid + " was deleted.");
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Event not found with UUID " + uuid);
+        } catch (UnauthorizedException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Server error, please check log");
+        }
     }
 }
 
