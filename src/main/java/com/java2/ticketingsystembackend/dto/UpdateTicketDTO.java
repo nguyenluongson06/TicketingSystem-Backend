@@ -12,7 +12,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class TicketUpdateDTO {
+public class UpdateTicketDTO {
     @NotBlank(message = "Ticket name is required")
     private String ticketName;
 

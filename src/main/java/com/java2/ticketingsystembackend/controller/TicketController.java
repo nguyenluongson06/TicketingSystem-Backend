@@ -1,11 +1,14 @@
 package com.java2.ticketingsystembackend.controller;
 
-import com.java2.ticketingsystembackend.dto.TicketCreateDTO;
+import com.java2.ticketingsystembackend.dto.CreateTicketDTO;
 import com.java2.ticketingsystembackend.dto.TicketDTO;
-import com.java2.ticketingsystembackend.dto.TicketUpdateDTO;
+import com.java2.ticketingsystembackend.dto.UpdateTicketDTO;
 import com.java2.ticketingsystembackend.entity.User;
+import com.java2.ticketingsystembackend.exception.EntityNotFoundException;
+import com.java2.ticketingsystembackend.exception.UnauthorizedException;
 import com.java2.ticketingsystembackend.service.AuthService;
 import com.java2.ticketingsystembackend.service.TicketService;
+import jakarta.annotation.security.PermitAll;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,38 +28,72 @@ public class TicketController {
         this.authService = authService;
     }
 
-    @GetMapping
+    @GetMapping("/list")
     public ResponseEntity<List<TicketDTO>> getTickets() {
         User currentUser = authService.getCurrentUser();
         List<TicketDTO> tickets = ticketService.getTicketsByRole(currentUser);
         return ResponseEntity.ok(tickets);
     }
 
-    @PostMapping
-    public ResponseEntity<TicketDTO> createTicket(@RequestBody @Valid TicketCreateDTO dto) {
-        User currentUser = authService.getCurrentUser();
-        TicketDTO ticket = ticketService.createTicket(dto, currentUser);
-        return new ResponseEntity<>(ticket, HttpStatus.CREATED);
+    @GetMapping("/event/{id}")
+    @PermitAll
+    public ResponseEntity<List<TicketDTO>> getTicketsOfEvent(@PathVariable int id) {
+        try {
+            List<TicketDTO> tickets = ticketService.getTicketsByEventId(id);
+            return ResponseEntity.ok(tickets);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (UnauthorizedException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+    }
+
+    @PostMapping("/create")
+    public ResponseEntity<TicketDTO> createTicket(@RequestBody @Valid CreateTicketDTO dto) {
+        try {
+            TicketDTO ticket = ticketService.createTicket(dto);
+            return new ResponseEntity<>(ticket, HttpStatus.CREATED);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (UnauthorizedException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<TicketDTO> updateTicket(@PathVariable int id, @RequestBody @Valid TicketUpdateDTO dto) {
-        User currentUser = authService.getCurrentUser();
-        TicketDTO ticket = ticketService.updateTicket(id, dto, currentUser);
-        return ResponseEntity.ok(ticket);
+    public ResponseEntity<TicketDTO> updateTicket(@PathVariable int id, @RequestBody @Valid UpdateTicketDTO dto) {
+        try {
+            TicketDTO ticket = ticketService.updateTicket(id, dto);
+            return ResponseEntity.ok(ticket);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (UnauthorizedException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTicket(@PathVariable int id) {
-        User currentUser = authService.getCurrentUser();
-        ticketService.deleteTicket(id, currentUser);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<String> deleteTicket(@PathVariable int id) {
+        try {
+            ticketService.deleteTicket(id);
+            return ResponseEntity.status(HttpStatus.OK).body("Ticket deleted");
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (UnauthorizedException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<TicketDTO> getTicketInfo(@PathVariable int id) {
-        User currentUser = authService.getCurrentUser();
-        TicketDTO ticket = ticketService.getTicketInfo(id, currentUser);
-        return ResponseEntity.ok(ticket);
+        try {
+            TicketDTO ticket = ticketService.getTicketInfoWithTicketId(id);
+            return ResponseEntity.ok(ticket);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (UnauthorizedException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
     }
 }

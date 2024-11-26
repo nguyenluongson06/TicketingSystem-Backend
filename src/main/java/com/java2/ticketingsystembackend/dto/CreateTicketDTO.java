@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
-public class TicketCreateDTO {
+public class CreateTicketDTO {
     @NotBlank
     private String ticketCode;
     @NotBlank

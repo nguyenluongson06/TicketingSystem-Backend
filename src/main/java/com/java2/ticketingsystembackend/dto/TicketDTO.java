@@ -16,7 +16,6 @@ public class TicketDTO {
     private String ticketPosition;
     private Integer maxQuantity;
     private double price;
-    private Integer eventId;
 
     public static TicketDTO fromEntity(Ticket ticket) {
         return new TicketDTO(
@@ -26,8 +25,7 @@ public class TicketDTO {
                 ticket.getInfo().getTicketType(),
                 ticket.getInfo().getTicketPosition(),
                 ticket.getInfo().getMaxQuantity(),
-                ticket.getInfo().getPrice(),
-                ticket.getEvent().getId()
+                ticket.getInfo().getPrice()
         );
     }
 }

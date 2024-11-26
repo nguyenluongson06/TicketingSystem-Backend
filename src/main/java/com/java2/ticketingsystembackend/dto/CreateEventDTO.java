@@ -25,6 +25,5 @@ public class CreateEventDTO {
         this.isPublic = isPublic;
         this.categoryId = categoryId;
     }
-    // Getters and setters
 }
 
