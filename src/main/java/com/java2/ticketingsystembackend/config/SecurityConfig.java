@@ -3,6 +3,7 @@ package com.java2.ticketingsystembackend.config;
 import com.java2.ticketingsystembackend.security.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -35,6 +36,11 @@ public class SecurityConfig {
                                 .requestMatchers("/api/events/info/**").permitAll()//permit all to get info using uuid
                                 .requestMatchers("/api/events/info").hasAnyRole("ADMIN", "ORGANIZER")
                                 .requestMatchers("/api/tickets/event/*").permitAll()//only auth users can get info using id
+                                .requestMatchers("/api/reservations").authenticated()
+                                .requestMatchers("/api/reservations/**").authenticated()
+                                .requestMatchers("/api/reservations/").authenticated()
+                                .requestMatchers("api/reservations/delete/**").authenticated()
+                                .requestMatchers("api/reservations/create").authenticated()
                                 .requestMatchers("/admin/**").hasRole("ADMIN")     // Only admins can access /admin endpoints
                                 .requestMatchers("/organizer/**").hasRole("ORGANIZER")  // Only organizers can access /organizer endpoints
                                 .anyRequest().authenticated()  // Require authentication for all other requests

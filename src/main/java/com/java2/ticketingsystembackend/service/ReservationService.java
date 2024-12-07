@@ -1,4 +1,4 @@
-﻿package com.java2.ticketingsystembackend.service;
+package com.java2.ticketingsystembackend.service;
 
 import com.java2.ticketingsystembackend.dto.CreateReservationDTO;
 import com.java2.ticketingsystembackend.dto.ReservationDTO;
@@ -70,10 +70,6 @@ public class ReservationService {
             return reservationRepository.findAll().stream()
                     .map(this::toReservationDTO)
                     .collect(Collectors.toList());
-        } else if (user.getRole().getName().equals("ORGANIZER")) {
-            return reservationRepository.findByEventOrganizerId(user.getId()).stream()
-                    .map(this::toReservationDTO)
-                    .collect(Collectors.toList());
         } else if (user.getRole().getName().equals("USER")) {
             return reservationRepository.findByUserId(user.getId()).stream()
                     .map(this::toReservationDTO)
@@ -84,15 +80,18 @@ public class ReservationService {
     }
 
     // Update reservation
-    public ReservationDTO updateReservation(Integer reservationId, UpdateReservationDTO reservationDTO) {
+    public ReservationDTO updateReservation(UpdateReservationDTO reservationDTO) {
         User user = authenticationUtils.getAuthenticatedUser();
 
         if (!user.getRole().getName().equals("USER")) {
             throw new UnauthorizedException("Only registered users can update reservations.");
         }
 
-        Reservation reservation = reservationRepository.findById(reservationId)
-                .orElseThrow(() -> new EntityNotFoundException("Reservation not found"));
+        Optional<Reservation> reservationOpt = reservationRepository.findByUuid(reservationDTO.getUuid());
+        if (reservationOpt.isEmpty()){
+            throw new EntityNotFoundException("Reservation not found");
+        }
+        Reservation reservation = reservationOpt.get();
 
         if (!reservation.getUser().getId().equals(user.getId())) {
             throw new UnauthorizedException("Unauthorized to update this reservation.");
@@ -105,15 +104,18 @@ public class ReservationService {
     }
 
     // Delete reservation
-    public void deleteReservation(Integer reservationId) {
+    public void deleteReservation(String reservationUuid) {
         User user = authenticationUtils.getAuthenticatedUser();
 
         if (!user.getRole().getName().equals("USER")) {
             throw new UnauthorizedException("Only registered users can delete reservations.");
         }
 
-        Reservation reservation = reservationRepository.findById(reservationId)
-                .orElseThrow(() -> new EntityNotFoundException("Reservation not found"));
+        Optional<Reservation> reservationOpt = reservationRepository.findByUuid(reservationUuid);
+        if (reservationOpt.isEmpty()){
+            throw new EntityNotFoundException("Reservation not found");
+        }
+        Reservation reservation = reservationOpt.get();
 
         if (!reservation.getUser().getId().equals(user.getId())) {
             throw new UnauthorizedException("Unauthorized to delete this reservation.");
