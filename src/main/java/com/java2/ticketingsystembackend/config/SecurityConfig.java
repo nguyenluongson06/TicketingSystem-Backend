@@ -41,6 +41,7 @@ public class SecurityConfig {
                                 .requestMatchers("/api/reservations/").authenticated()
                                 .requestMatchers("api/reservations/delete/**").authenticated()
                                 .requestMatchers("api/reservations/create").authenticated()
+                                .requestMatchers("/api/reservations/checkin/**").permitAll()
                                 .requestMatchers("/api/email/test").authenticated()
                                 .requestMatchers("/api/email/testqr").authenticated()
                                 .requestMatchers("/admin/**").hasRole("ADMIN")     // Only admins can access /admin endpoints

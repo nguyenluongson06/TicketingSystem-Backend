@@ -127,6 +127,8 @@ public class ReservationService {
         reservationRepository.delete(reservation);
     }
 
+
+
     // Utility method: Convert Reservation to DTO
     private ReservationDTO toReservationDTO(Reservation reservation) {
         ReservationDTO dto = new ReservationDTO();
