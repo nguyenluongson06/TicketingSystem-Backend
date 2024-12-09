@@ -29,6 +29,7 @@ public class ReservationService {
     private final EventRepository eventRepository;
     private final AuthenticationUtils authenticationUtils;
     private final TicketRepository ticketRepository;
+    private final EmailService emailService;
 
     // Create reservation
     public ReservationDTO createReservation(CreateReservationDTO reservationDTO) {
@@ -58,6 +59,8 @@ public class ReservationService {
         reservation.setReservationDate(LocalDateTime.now());
         reservation.setIsUsed(false);
         reservationRepository.save(reservation);
+        String checkinURL = "http://localhost:8000/api/reservations/checkin/" + reservation.getUuid();
+        emailService.sendReservationEmail(user.getEmail(), user.getFullname(), event.getName(), checkinURL);
 
         return toReservationDTO(reservation);
     }

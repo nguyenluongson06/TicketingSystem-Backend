@@ -14,10 +14,12 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, EmailService emailService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.emailService = emailService;
     }
 
     public boolean registerUser(SignupRequestDTO signupRequestDTO) {
@@ -39,6 +41,7 @@ public class UserService {
         user.setRole(defaultRole);
         userRepository.save(user);
         System.out.println("New user uuid:" + user.getUuid());
+        emailService.sendRegistrationEmail(user);
         return true;
     }
 }
