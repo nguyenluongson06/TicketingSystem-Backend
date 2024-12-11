@@ -12,4 +12,5 @@ public interface EventRepository extends JpaRepository<Event, Integer> {
     List<Event> findByIsPublicTrue(); // For normal users
     List<Event> findByOrganizerId(Integer organizerId); // For organizers
     Optional<Event> findByUuid(String uuid);//find event using uuid
+    List<Event> findAllByCategoryId(Integer categoryId);
 }
