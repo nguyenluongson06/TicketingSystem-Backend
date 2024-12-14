@@ -17,11 +17,12 @@ public class EventDTO {
     private boolean isPublic;
     private OrganizerDTO organizer;
     private String categoryName;
+    private String thumbnailUrl;
 
     // Constructor
     public EventDTO(String uuid, String name, LocalDateTime timeStart, LocalDateTime timeEnd,
                     String place, String description, int maxQuantity, boolean isPublic,
-                    OrganizerDTO organizer, String categoryName) {
+                    OrganizerDTO organizer, String categoryName, String thumbnailUrl) {
         this.uuid = uuid;
         this.name = name;
         this.timeStart = timeStart;
@@ -32,5 +33,6 @@ public class EventDTO {
         this.isPublic = isPublic;
         this.organizer = organizer;
         this.categoryName = categoryName;
+        this.thumbnailUrl = thumbnailUrl;
     }
 }

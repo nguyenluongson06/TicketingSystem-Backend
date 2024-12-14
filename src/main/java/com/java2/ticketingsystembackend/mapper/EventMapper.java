@@ -22,7 +22,8 @@ public class EventMapper {
                 event.getMaxQuantity(),
                 event.getIsPublic(),
                 organizerDTO,
-                event.getCategory().getName()
+                event.getCategory().getName(),
+                event.getThumbnail()
         );
     }
 }

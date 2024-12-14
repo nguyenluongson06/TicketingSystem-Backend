@@ -47,6 +47,9 @@ public class Event {
     @JoinColumn(name = "category_id")
     private Category category;
 
+    @Column(name = "thumbnail")
+    private String thumbnail;
+
     public boolean isPublic() {
         return isPublic;
     }
