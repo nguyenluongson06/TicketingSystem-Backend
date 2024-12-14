@@ -1,8 +1,9 @@
-﻿package com.java2.ticketingsystembackend.controller;
+package com.java2.ticketingsystembackend.controller;
 
 import com.java2.ticketingsystembackend.dto.CreateMediaDTO;
 import com.java2.ticketingsystembackend.dto.MediaDTO;
 import com.java2.ticketingsystembackend.entity.Media;
+import com.java2.ticketingsystembackend.exception.EntityNotFoundException;
 import com.java2.ticketingsystembackend.mapper.MediaMapper;
 import com.java2.ticketingsystembackend.service.MediaService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,9 +19,16 @@ public class MediaController {
     @Autowired
     private MediaService mediaService;
 
-    @GetMapping("/event/{eventId}")
-    public ResponseEntity<List<MediaDTO>> getMediaByEvent(@PathVariable Integer eventId) {
-        return ResponseEntity.ok(mediaService.getMediaByEventId(eventId));
+    @GetMapping("/event/{uuid}")
+    public ResponseEntity<List<MediaDTO>> getMediaByEvent(@PathVariable String uuid) {
+        try {
+            return ResponseEntity.ok(mediaService.getMediaByEventUuid(uuid));
+        } catch (EntityNotFoundException e){
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).build();
+        }
     }
 
     @PostMapping("/event/{eventId}")

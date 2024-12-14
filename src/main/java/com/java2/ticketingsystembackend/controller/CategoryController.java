@@ -1,4 +1,4 @@
-﻿package com.java2.ticketingsystembackend.controller;
+package com.java2.ticketingsystembackend.controller;
 
 import com.java2.ticketingsystembackend.dto.CategoryDTO;
 import com.java2.ticketingsystembackend.service.CategoryService;

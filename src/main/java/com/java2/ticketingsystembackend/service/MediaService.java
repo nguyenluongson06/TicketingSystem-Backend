@@ -1,4 +1,4 @@
-﻿package com.java2.ticketingsystembackend.service;
+package com.java2.ticketingsystembackend.service;
 
 import com.java2.ticketingsystembackend.dto.CreateMediaDTO;
 import com.java2.ticketingsystembackend.dto.MediaDTO;
@@ -14,6 +14,7 @@ import com.java2.ticketingsystembackend.security.AuthenticationUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -28,10 +29,10 @@ public class MediaService {
     @Autowired
     private AuthenticationUtils authenticationUtils;
 
-    public List<MediaDTO> getMediaByEventId(Integer eventId) {
-        Event event = eventRepository.findById(eventId)
+    public List<MediaDTO> getMediaByEventUuid(String eventUuid) {
+        Event event = eventRepository.findByUuid(eventUuid)
                 .orElseThrow(() -> new EntityNotFoundException("Event not found"));
-        return mediaRepository.findAllByEventId(eventId).stream()
+        return mediaRepository.findAllByEventId(event.getId()).stream()
                 .map(MediaMapper::toMediaDTO)
                 .toList();
     }

@@ -18,11 +18,11 @@ public class Media {
     private String url;
 
     @Enumerated(EnumType.STRING)
-    private MediaType type = MediaType.IMAGE;
+    private MediaType type = MediaType.image;
 
     public enum MediaType {
-        IMAGE,
-        VIDEO
+        image,
+        video
     }
 }
 

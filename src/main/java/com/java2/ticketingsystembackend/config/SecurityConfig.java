@@ -44,6 +44,8 @@ public class SecurityConfig {
                                 .requestMatchers("/api/reservations/checkin/**").permitAll()
                                 .requestMatchers("/api/email/test").authenticated()
                                 .requestMatchers("/api/email/testqr").authenticated()
+                                .requestMatchers("/api/categories").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/media/event/**").permitAll()
                                 .requestMatchers("/admin/**").hasRole("ADMIN")     // Only admins can access /admin endpoints
                                 .requestMatchers("/organizer/**").hasRole("ORGANIZER")  // Only organizers can access /organizer endpoints
                                 .anyRequest().authenticated()  // Require authentication for all other requests

@@ -1,4 +1,4 @@
-﻿package com.java2.ticketingsystembackend.dto;
+package com.java2.ticketingsystembackend.dto;
 
 
 import lombok.Getter;

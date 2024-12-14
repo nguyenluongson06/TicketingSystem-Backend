@@ -1,4 +1,4 @@
-﻿package com.java2.ticketingsystembackend.mapper;
+package com.java2.ticketingsystembackend.mapper;
 
 import com.java2.ticketingsystembackend.dto.MediaDTO;
 import com.java2.ticketingsystembackend.entity.Media;

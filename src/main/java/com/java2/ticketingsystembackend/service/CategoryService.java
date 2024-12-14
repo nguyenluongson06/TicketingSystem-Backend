@@ -1,4 +1,4 @@
-﻿package com.java2.ticketingsystembackend.service;
+package com.java2.ticketingsystembackend.service;
 
 import com.java2.ticketingsystembackend.dto.CategoryDTO;
 import com.java2.ticketingsystembackend.mapper.EventMapper;
