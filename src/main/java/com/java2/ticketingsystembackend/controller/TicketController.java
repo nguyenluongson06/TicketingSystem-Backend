@@ -36,11 +36,11 @@ public class TicketController {
         return ResponseEntity.ok(tickets);
     }
 
-    @GetMapping("/event/{id}")
+    @GetMapping("/event/{uuid}")
     @PermitAll
-    public ResponseEntity<List<TicketDTO>> getTicketsOfEvent(@PathVariable int id) {
+    public ResponseEntity<List<TicketDTO>> getTicketsOfEvent(@PathVariable String uuid) {
         try {
-            List<TicketDTO> tickets = ticketService.getTicketsByEventId(id);
+            List<TicketDTO> tickets = ticketService.getTicketsByEventUuid(uuid);
             return ResponseEntity.ok(tickets);
         } catch (EntityNotFoundException e) {
             return ResponseEntity.notFound().build();

@@ -51,19 +51,19 @@ public class TicketService {
                 .toList();
     }
 
-    public List<TicketDTO> getTicketsByEventId(int eventId) {
-        Optional<Event> eventOpt = eventRepository.findById(eventId);
+    public List<TicketDTO> getTicketsByEventUuid(String eventUuid) {
+        Optional<Event> eventOpt = eventRepository.findByUuid(eventUuid);
         if (eventOpt.isEmpty()) {
             throw new EntityNotFoundException("Event not found");
         }
 
         Event event = eventOpt.get();
         if (event.isPublic()){
-            return ticketRepository.findByEventId(eventId).stream().map(this::convertToDTO).toList();
+            return ticketRepository.findByEventId(event.getId()).stream().map(this::convertToDTO).toList();
         } else {
             User authUser = authenticationUtils.getAuthenticatedUser();
             if (authUser.getRole().getName().equals("ADMIN") || (authUser.getRole().getName().equals("ORGANIZER") && event.getOrganizer().getId().equals(authUser.getId()))) {
-                return ticketRepository.findByEventId(eventId).stream().map(this::convertToDTO).toList();
+                return ticketRepository.findByEventId(event.getId()).stream().map(this::convertToDTO).toList();
             } else {
                 throw new UnauthorizedException("Unauthorized: You don't have permission to access this resource");
             }
