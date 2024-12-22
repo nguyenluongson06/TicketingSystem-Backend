@@ -31,7 +31,7 @@ public class SecurityConfig {
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeRequests(authorizeRequests ->
                         authorizeRequests
-                                .requestMatchers("/api/auth/signup", "/api/auth/login").permitAll()
+                                .requestMatchers("/api/auth/signup", "/api/auth/login", "/api/auth/info").permitAll()
                                 .requestMatchers("/api/events/list").permitAll()// Allow open access to register/login
                                 .requestMatchers("/api/events/info/**").permitAll()//permit all to get info using uuid
                                 .requestMatchers("/api/events/info").hasAnyRole("ADMIN", "ORGANIZER")
