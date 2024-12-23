@@ -59,7 +59,7 @@ public class ReservationService {
         reservation.setReservationDate(LocalDateTime.now());
         reservation.setIsUsed(false);
         reservationRepository.save(reservation);
-        String checkinURL = "http://localhost:808 0/api/reservations/checkin/" + reservation.getUuid();
+        String checkinURL = "http://localhost:3000/reservations/checkin/" + reservation.getUuid();
         emailService.sendReservationEmail(user.getEmail(), user.getFullname(), event.getName(), checkinURL);
 
         return toReservationDTO(reservation);
