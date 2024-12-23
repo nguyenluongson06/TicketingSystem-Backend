@@ -14,6 +14,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 @EnableWebSecurity
@@ -26,12 +28,27 @@ public class SecurityConfig {
     }
 
     @Bean
+    public WebMvcConfigurer corsConfigurer() {
+        return new WebMvcConfigurer() {
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                registry.addMapping("/**") // Apply CORS to all endpoints
+                        .allowedOrigins("http://localhost:3000") // Allow frontend origin
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") // Include OPTIONS
+                        .allowedHeaders("Content-Type", "Authorization") // Include headers sent by frontend
+                        .exposedHeaders("Authorization") // If you return token/headers in the response
+                        .allowCredentials(true); // Allow cookies if needed
+            }
+        };
+    }
+
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
         http
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeRequests(authorizeRequests ->
                         authorizeRequests
-                                .requestMatchers("/api/auth/signup", "/api/auth/login", "/api/auth/info").permitAll()
+                                .requestMatchers("/api/auth/**").permitAll()
                                 .requestMatchers("/api/events/list").permitAll()// Allow open access to register/login
                                 .requestMatchers("/api/events/info/**").permitAll()//permit all to get info using uuid
                                 .requestMatchers("/api/events/info").hasAnyRole("ADMIN", "ORGANIZER")
@@ -48,13 +65,14 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.GET, "/api/media/event/**").permitAll()
                                 .requestMatchers("/admin/**").hasRole("ADMIN")     // Only admins can access /admin endpoints
                                 .requestMatchers("/organizer/**").hasRole("ORGANIZER")  // Only organizers can access /organizer endpoints
+                                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                                 .anyRequest().authenticated()  // Require authentication for all other requests
                 )
                 .formLogin(AbstractHttpConfigurer::disable)
                 .logout(logout -> logout
                         .logoutUrl("/logout")  // Customize logout URL if needed
                         .permitAll())
-                .csrf(AbstractHttpConfigurer::disable);  // Disable CSRF if you're using stateless authentication (e.g., JWT)
+                .csrf(AbstractHttpConfigurer::disable).cors();  // Disable CSRF if you're using stateless authentication (e.g., JWT)
 
         return http.build();
     }
